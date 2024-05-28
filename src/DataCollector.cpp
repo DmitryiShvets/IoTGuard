@@ -4,12 +4,15 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
+#include <ctime>
 // for convenience
 using json = nlohmann::json;
 
+#include <filesystem>
 #include "pugixml.hpp"
 
 namespace iotguard {
+
 
     void DataCollector::GetData() {
         for (RequestData &request: requests) {
@@ -21,13 +24,19 @@ namespace iotguard {
                                                cpr::Body{request.body}
             );
             if (response.status_code == 200) {
-                std::string file_path = std::format("logs\\{}-{}", device, request.id);
+                //time_t now = time(0);
+                std::time_t now = std::time(nullptr);
+                std::string file_path = std::format(R"(logs\{}\{}\{}.xml)", device, request.id, now);
 
                 pugi::xml_document doc;
                 pugi::xml_parse_result result = doc.load_string(response.text.c_str());
 
                 if (result) {
-                    doc.save_file(file_path.c_str());
+                    std::string timestamp = std::ctime(&now);
+                    timestamp.erase(std::remove(timestamp.begin(), timestamp.end(), '\n'), timestamp.end());
+                    doc.document_element().append_attribute("timestamp").set_value(timestamp.c_str());
+
+                    std::cout << doc.save_file(file_path.c_str()) << '\n';
                 } else {
                     std::cerr << "XML  parsed with errors, attr value: [" << doc.child("node").attribute("attr").value()
                               << "]\n";
@@ -74,6 +83,7 @@ namespace iotguard {
                 tmp.headers[header] = value;
             }
             requests.push_back(std::move(tmp));
+            std::filesystem::create_directories(std::format(R"(logs\{}\{})", device, key));
         }
         file.close();
         return true;

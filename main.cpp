@@ -5,6 +5,8 @@
 // for convenience
 using json = nlohmann::json;
 #include "src/DataCollector.h"
+#include "src/DataParser.h"
+
 int main() {
 
 //    json conf;
@@ -17,15 +19,16 @@ int main() {
 //    f.close();
 
 //    json juniper;
-//    juniper["process.xml"] = { {"url", "rpc/get-system-process-information"},{"headers", {{"Accept", "application/xml"},{"Content-Type", "application/xml"}}}, {"body", "<detail/>"} };
-//    juniper["httpd.xml"] = { {"url", "rpc/get-log"},{"headers", {{"Accept", "application/xml"},{"Content-Type", "application/xml"}}}, {"body", "<filename>httpd.log</filename>"} };
+//    juniper["process"] = { {"url", "rpc/get-system-process-information"},{"headers", {{"Accept", "application/xml"},{"Content-Type", "application/xml"}}}, {"body", "<detail/>"} };
+//    juniper["httpd"] = { {"url", "rpc/get-log"},{"headers", {{"Accept", "application/xml"},{"Content-Type", "application/xml"}}}, {"body", "<filename>httpd.log</filename>"} };
 //    std::ofstream f1("configs\\juniper_url.json");
 //    f1 << juniper;
 //    f1.close();
 
     iotguard::DataCollector collector{"configs\\config.json"};
 
-    collector.GetData();
-
+    //collector.GetData();
+    iotguard::DataParser dataParser;
+    dataParser.ParseData();
     return 0;
 }
