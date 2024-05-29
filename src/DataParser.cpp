@@ -6,7 +6,7 @@
 #include <regex>
 #include <fstream>
 
-#define REFERENCE_MODE true
+#define REFERENCE_MODE false
 
 using json = nlohmann::json;
 namespace iotguard {
@@ -38,7 +38,7 @@ namespace iotguard {
         std::string timestamp = content.attribute("timestamp").value();
 
         std::vector<std::string> lines = parse_lines(content.child_value());
-
+        if (lines.size() <= offset) return {};
         std::vector<LogEntry> parse_result;
 
         std::vector<std::regex> reg;
@@ -62,13 +62,6 @@ namespace iotguard {
         copy_if_match(parse_result, lines, regex_other, timestamp);
         remove_if_match(lines, regex_other);
 
-        if (!lines.empty()) {
-            std::cout << "there is unparsed data:" << '\n';
-            for (const auto &item: lines) {
-                std::cout << item << '\n';
-            }
-        }
-
         if (REFERENCE_MODE) {
             json httpd;
             for (const auto &item: parse_result) {
@@ -79,6 +72,7 @@ namespace iotguard {
             f << httpd;
             f.close();
         }
+        offset += parse_result.size();
         return parse_result;
     }
 
@@ -105,6 +99,39 @@ namespace iotguard {
         }
     }
 
+    HttpdParser::HttpdParser() {
+        std::filesystem::path file{R"(configs\parser-httpd-config.json)"};
+
+        if (!std::filesystem::exists(file)) {
+            offset = 0;
+            return;
+        }
+
+        std::ifstream config_file(file);
+        json config = json::parse(config_file, nullptr, false);
+        config_file.close();
+
+        if (config.is_discarded()) {
+            offset = 0;
+            return;
+        }
+
+        offset = config["offset"];
+    }
+
+    HttpdParser::~HttpdParser() {
+        std::filesystem::path file{R"(configs\parser-httpd-config.json)"};
+
+        std::ofstream config_file(file);
+        json config;
+
+        config["offset"] = offset;
+
+        config_file << config;
+        config_file.close();
+
+
+    }
 
     std::vector<LogEntry> ProcessParser::parse(const std::string &file) {
         pugi::xml_document doc;
@@ -125,7 +152,7 @@ namespace iotguard {
         for (pugi::xml_node proc = processes.first_child(); proc; proc = proc.next_sibling()) {
             std::string data = proc.child("command").text().get();
             size_t hash = hasher(data);
-            parse_result.emplace_back("process",data,timestamp,hash);
+            parse_result.emplace_back("process", data, timestamp, hash);
         }
 
         if (REFERENCE_MODE) {
@@ -149,14 +176,14 @@ namespace iotguard {
     }
 
     void DataParser::ParseData() {
-        ///TODO СДЕЛАТЬ СЧЕТЧИК ПРОЧИТАНЫХ ЛОГОВ HttpdParser
-        //SetParser(std::make_unique<HttpdParser>());
-        //Parse(R"(logs\juniper\httpd\1716898018.xml)");
-        //Parse(R"(logs\juniper\httpd\1716905013.xml)");
+
+        SetParser(std::make_unique<HttpdParser>());
+        Parse(R"(logs\juniper\httpd\1716898018.xml)");
+        Parse(R"(logs\juniper\httpd\1716905013.xml)");
         //Parse(R"(logs\juniper-httpd.xml)");
 
-        SetParser(std::make_unique<ProcessParser>());
-        Parse(R"(logs\juniper\process\1716905013.xml)");
+//        SetParser(std::make_unique<ProcessParser>());
+//        Parse(R"(logs\juniper\process\1716905013.xml)");
     }
 
     std::vector<std::string> parse_lines(const std::string &data) {

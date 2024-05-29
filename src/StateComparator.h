@@ -7,6 +7,8 @@ namespace iotguard {
 
     class StateComparator {
 
+    public:
+        void Init();
     };
 
 } // iotguard
