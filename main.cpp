@@ -4,9 +4,13 @@
 #include <fstream>
 // for convenience
 using json = nlohmann::json;
+
+
 #include "src/DataCollector.h"
 #include "src/DataParser.h"
 #include "src/StateComparator.h"
+#include "src/AnomalyDetector.h"
+
 int main() {
 
 //    json conf;
@@ -27,7 +31,7 @@ int main() {
 
     iotguard::DataCollector collector{"configs\\config.json"};
     iotguard::DataParser dataParser;
-    std::unique_ptr<iotguard::HttpdParser> httpdParser = std::make_unique<iotguard::HttpdParser>();
+    std::unique_ptr<iotguard::HttpdParser> httpdParser = std::make_unique<iotguard::HttpdParser>(false);
     std::unique_ptr<iotguard::ProcessParser> processParser = std::make_unique<iotguard::ProcessParser>();
     std::unique_ptr<iotguard::HttpdComparator> httpdComparator = std::make_unique<iotguard::HttpdComparator>();
     std::unique_ptr<iotguard::ProcessComparator> processComparator = std::make_unique<iotguard::ProcessComparator>();
@@ -37,12 +41,20 @@ int main() {
 
     //collector.GetData();
     dataParser.SetParser(httpdParser.get());
-    dataParser.SetParser(processParser.get());
-    //auto parse_result = dataParser.Parse(R"(logs\juniper\httpd\1716905013.xml)");
-    auto parse_result = dataParser.Parse(R"(logs\juniper\process\1716905013.xml)");
+    //dataParser.SetParser(processParser.get());
+    auto parse_result = dataParser.Parse(R"(logs\juniper\httpd\1716905013.xml)");
+    //auto parse_result = dataParser.Parse(R"(logs\juniper\process\1716905013.xml)");
     comparator.SetComparator(httpdComparator.get());
-    comparator.SetComparator(processComparator.get());
+    //comparator.SetComparator(processComparator.get());
     auto unrecognized_data = comparator.Compare(parse_result);
+
+    iotguard::AnomalyDetector anomalyDetector;
+    anomalyDetector.AddRule({"", std::regex("(.*)"), iotguard::IMPORTANCE_LEVEL::INFO, 0});
+    anomalyDetector.AddRule({"", std::regex(".*(/?PHPRC=/dev/fd/0).*"), iotguard::IMPORTANCE_LEVEL::CRITICAL, 0});
+    auto anomaly_data = anomalyDetector.DetectAnomalies(unrecognized_data);
+    for (const auto &item: anomaly_data) {
+        std::cout << item << '\n';
+    }
 
     return 0;
 }

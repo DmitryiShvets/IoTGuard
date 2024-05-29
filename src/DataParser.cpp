@@ -105,10 +105,11 @@ namespace iotguard {
         }
     }
 
-    HttpdParser::HttpdParser() {
+    HttpdParser::HttpdParser(bool use_cache) {
+
         std::filesystem::path file{R"(configs\parser-httpd-config.json)"};
 
-        if (!std::filesystem::exists(file)) {
+        if (!use_cache || !std::filesystem::exists(file)) {
             offset = 0;
             return;
         }
