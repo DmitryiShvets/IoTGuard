@@ -1,14 +1,15 @@
 #include <iostream>
+#include <regex>
+#include <fstream>
+
 #include "DataParser.h"
 #include "pugixml.hpp"
 #include "nlohmann/json.hpp"
-#include <sstream>
-#include <regex>
-#include <fstream>
 
 #define REFERENCE_MODE false
 
 using json = nlohmann::json;
+
 namespace iotguard {
 
     void to_json(json &j, const LogEntry &p) {
@@ -23,6 +24,10 @@ namespace iotguard {
         j.at("data").get_to(p.data);
         j.at("timestamp").get_to(p.timestamp);
         j.at("hash").get_to(p.hash);
+    }
+
+    LogEntry LogEntry::from_json(const json &j) {
+        return j.template get<iotguard::LogEntry>();
     }
 
     std::vector<LogEntry> HttpdParser::parse(const std::string &file) {
@@ -94,7 +99,8 @@ namespace iotguard {
         for (auto it = start; it != input.end(); it++) {
             if (std::regex_match(*it, pieces_match, regex)) {
                 size_t hash = hasher(*it);
-                result.emplace_back(pieces_match[1], pieces_match[2], timestamp, hash);
+                if (pieces_match.size() > 2) result.emplace_back(pieces_match[1], pieces_match[2], timestamp, hash);
+                else result.emplace_back("Other", pieces_match[1], timestamp, hash);
             }
         }
     }
@@ -169,23 +175,6 @@ namespace iotguard {
         return parse_result;
     }
 
-    void DataParser::Parse(const std::string &data) {
-        if (parser) {
-            parser->parse(data);
-        }
-    }
-
-    void DataParser::ParseData() {
-
-        SetParser(std::make_unique<HttpdParser>());
-        Parse(R"(logs\juniper\httpd\1716898018.xml)");
-        Parse(R"(logs\juniper\httpd\1716905013.xml)");
-        //Parse(R"(logs\juniper-httpd.xml)");
-
-//        SetParser(std::make_unique<ProcessParser>());
-//        Parse(R"(logs\juniper\process\1716905013.xml)");
-    }
-
     std::vector<std::string> parse_lines(const std::string &data) {
         std::vector<std::string> lines;
         std::istringstream stream(data);
@@ -198,4 +187,10 @@ namespace iotguard {
         return lines;
     }
 
+    std::vector<LogEntry> DataParser::Parse(const std::string &data) {
+        if (!parser) {
+            return {};
+        }
+        return parser->parse(data);
+    }
 } // iotguard

@@ -2,16 +2,26 @@
 #define IOTGUARD_DATAPARSER_H
 
 #include <string>
-#include <memory>
 #include <vector>
 #include <regex>
 
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
 namespace iotguard {
+
     struct LogEntry {
         std::string type;
         std::string data;
         std::string timestamp;
         std::size_t hash;
+
+        bool operator==(const LogEntry &other) const {
+            return type == other.type && hash == other.hash;
+        }
+
+        static LogEntry from_json(const json &j);
     };
 
     std::vector<std::string> parse_lines(const std::string &data);
@@ -25,11 +35,15 @@ namespace iotguard {
     };
 
     // Парсер для httpd логов
-    class HttpdParser :   public IParser {
+    class HttpdParser : public IParser {
         std::size_t offset;
         std::hash<std::string> hasher;
+
         void remove_if_match(std::vector<std::string> &input, const std::regex &regex) const;
-        void copy_if_match(std::vector<LogEntry>&result, const std::vector<std::string> &input, const std::regex &regex, const std::string& timestamp);
+
+        void copy_if_match(std::vector<LogEntry> &result,
+                           const std::vector<std::string> &input, const std::regex &regex,
+                           const std::string &timestamp);
 
 
     public:
@@ -50,18 +64,27 @@ namespace iotguard {
     ///Data Parser распарсивает полученные данные и передает их в State Comparator.
 
     class DataParser {
-
-        void SetParser(std::unique_ptr<IParser> p) {
-            this->parser = std::move(p);
+    public:
+        void SetParser(IParser *p) {
+            this->parser = p;
         }
 
-        void Parse(const std::string &data);
+        std::vector<LogEntry> Parse(const std::string &data);
 
-        std::unique_ptr<IParser> parser;
-    public:
-        void ParseData();
+    private:
+        IParser *parser = nullptr;
+
     };
 
 } // iotguard
+
+namespace std {
+    template<>
+    struct hash<iotguard::LogEntry> {
+        std::size_t operator()(const iotguard::LogEntry &entry) const {
+            return entry.hash;
+        }
+    };
+}
 
 #endif //IOTGUARD_DATAPARSER_H

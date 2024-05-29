@@ -6,7 +6,7 @@
 using json = nlohmann::json;
 #include "src/DataCollector.h"
 #include "src/DataParser.h"
-
+#include "src/StateComparator.h"
 int main() {
 
 //    json conf;
@@ -26,9 +26,23 @@ int main() {
 //    f1.close();
 
     iotguard::DataCollector collector{"configs\\config.json"};
+    iotguard::DataParser dataParser;
+    std::unique_ptr<iotguard::HttpdParser> httpdParser = std::make_unique<iotguard::HttpdParser>();
+    std::unique_ptr<iotguard::ProcessParser> processParser = std::make_unique<iotguard::ProcessParser>();
+    std::unique_ptr<iotguard::HttpdComparator> httpdComparator = std::make_unique<iotguard::HttpdComparator>();
+    std::unique_ptr<iotguard::ProcessComparator> processComparator = std::make_unique<iotguard::ProcessComparator>();
+    httpdComparator->Init();
+    processComparator->Init();
+    iotguard::StateComparator comparator;
 
     //collector.GetData();
-    iotguard::DataParser dataParser;
-    dataParser.ParseData();
+    dataParser.SetParser(httpdParser.get());
+    dataParser.SetParser(processParser.get());
+    //auto parse_result = dataParser.Parse(R"(logs\juniper\httpd\1716905013.xml)");
+    auto parse_result = dataParser.Parse(R"(logs\juniper\process\1716905013.xml)");
+    comparator.SetComparator(httpdComparator.get());
+    comparator.SetComparator(processComparator.get());
+    auto unrecognized_data = comparator.Compare(parse_result);
+
     return 0;
 }
