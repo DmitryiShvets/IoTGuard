@@ -3,18 +3,12 @@
 #define IOTGUARD_DATACOLLECTOR_H
 
 #include <string>
-#include <map>
 #include <vector>
-#include <cpr/cpr.h>
+#include "Stuff.h"
 
 namespace iotguard {
 
-    struct RequestData {
-        std::string id;
-        std::string url;
-        std::map<std::basic_string<char>, std::basic_string<char>, cpr::CaseInsensitiveCompare> headers;
-        std::string body;
-    };
+
 
 ///Data Collector отправляет REST-запросы к IoT-устройствам и получает данные.
 

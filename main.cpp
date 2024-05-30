@@ -10,7 +10,8 @@ using json = nlohmann::json;
 #include "src/DataParser.h"
 #include "src/StateComparator.h"
 #include "src/AnomalyDetector.h"
-
+#include "src/NotificationSystem.h"
+#include "src/EventLogger.h"
 int main() {
 
 //    json conf;
@@ -35,6 +36,9 @@ int main() {
     std::unique_ptr<iotguard::ProcessParser> processParser = std::make_unique<iotguard::ProcessParser>();
     std::unique_ptr<iotguard::HttpdComparator> httpdComparator = std::make_unique<iotguard::HttpdComparator>();
     std::unique_ptr<iotguard::ProcessComparator> processComparator = std::make_unique<iotguard::ProcessComparator>();
+    iotguard::NotificationSystem notifier;
+    iotguard::EventLogger logger;
+    
     httpdComparator->Init();
     processComparator->Init();
     iotguard::StateComparator comparator;
@@ -52,9 +56,7 @@ int main() {
     anomalyDetector.AddRule({"", std::regex("(.*)"), iotguard::IMPORTANCE_LEVEL::INFO, 0});
     anomalyDetector.AddRule({"", std::regex(".*(/?PHPRC=/dev/fd/0).*"), iotguard::IMPORTANCE_LEVEL::CRITICAL, 0});
     auto anomaly_data = anomalyDetector.DetectAnomalies(unrecognized_data);
-    for (const auto &item: anomaly_data) {
-        std::cout << item << '\n';
-    }
+
 
     return 0;
 }

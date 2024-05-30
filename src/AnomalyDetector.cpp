@@ -23,13 +23,15 @@ namespace iotguard {
                 }
             }
         }
-
+        observer_manager->NotifyObservers(anomalies);
         return anomalies;
     }
 
     void AnomalyDetector::AddRule(DetectionRule rule) {
         ruleset.push_back(std::move(rule));
     }
+
+    AnomalyDetector::AnomalyDetector() : observer_manager(&ObserverManager::GetInstance()){}
 
     std::ostream &operator<<(std::ostream &os, const AnomalyEntry &entry) {
         os <<"anomaly detected... level: " << LEVEL[entry.level] << " type: " << entry.type << " data: " << entry.data << " timestamp: "

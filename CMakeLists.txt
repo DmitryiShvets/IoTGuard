@@ -26,7 +26,10 @@ add_executable(IoTGuard main.cpp
         src/NotificationSystem.cpp
         src/NotificationSystem.h
         src/EventLogger.cpp
-        src/EventLogger.h)
+        src/EventLogger.h
+        src/ObserverManager.cpp
+        src/ObserverManager.h
+        src/Stuff.h)
 
 if (WIN32) # Install dlls in the same directory as the executable on Windows
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/)

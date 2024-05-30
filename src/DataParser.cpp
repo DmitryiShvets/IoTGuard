@@ -5,6 +5,8 @@
 #include "DataParser.h"
 #include "pugixml.hpp"
 #include "nlohmann/json.hpp"
+#include "Stuff.h"
+
 
 #define REFERENCE_MODE false
 
@@ -74,7 +76,7 @@ namespace iotguard {
             }
             std::filesystem::create_directories(std::format(R"(reference\juniper)"));
             std::ofstream f(R"(reference\juniper\httpd.json)");
-            f << httpd;
+            f << httpd.dump(4);
             f.close();
         }
         offset += parse_result.size();
@@ -134,7 +136,7 @@ namespace iotguard {
 
         config["offset"] = offset;
 
-        config_file << config;
+        config_file << config.dump(4);
         config_file.close();
 
 
@@ -163,13 +165,13 @@ namespace iotguard {
         }
 
         if (REFERENCE_MODE) {
-            json httpd;
+            json proc;
             for (const auto &item: parse_result) {
-                httpd.emplace_back(item);
+                proc.emplace_back(item);
             }
             std::filesystem::create_directories(std::format(R"(reference\juniper)"));
             std::ofstream f(R"(reference\juniper\process.json)");
-            f << httpd;
+            f << proc.dump(4);
             f.close();
         }
 

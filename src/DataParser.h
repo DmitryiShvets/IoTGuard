@@ -3,26 +3,10 @@
 
 #include <string>
 #include <vector>
-#include <regex>
+#include "Stuff.h"
 
-#include "nlohmann/json.hpp"
-
-using json = nlohmann::json;
 
 namespace iotguard {
-
-    struct LogEntry {
-        std::string type;
-        std::string data;
-        std::string timestamp;
-        std::size_t hash;
-
-        bool operator==(const LogEntry &other) const {
-            return type == other.type && hash == other.hash;
-        }
-
-        static LogEntry from_json(const json &j);
-    };
 
     std::vector<std::string> parse_lines(const std::string &data);
 
@@ -79,13 +63,5 @@ namespace iotguard {
 
 } // iotguard
 
-namespace std {
-    template<>
-    struct hash<iotguard::LogEntry> {
-        std::size_t operator()(const iotguard::LogEntry &entry) const {
-            return entry.hash;
-        }
-    };
-}
 
 #endif //IOTGUARD_DATAPARSER_H

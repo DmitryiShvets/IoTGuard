@@ -1,0 +1,18 @@
+{
+  "httpd": {
+    "body": "<filename>httpd.log</filename>",
+    "headers": {
+      "Accept": "application/xml",
+      "Content-Type": "application/xml"
+    },
+    "url": "rpc/get-log"
+  },
+  "process": {
+    "body": "<detail/>",
+    "headers": {
+      "Accept": "application/xml",
+      "Content-Type": "application/xml"
+    },
+    "url": "rpc/get-system-process-information"
+  }
+}

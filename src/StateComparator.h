@@ -2,7 +2,7 @@
 #define IOTGUARD_STATECOMPARATOR_H
 
 #include <unordered_set>
-#include "DataParser.h"
+#include "Stuff.h"
 
 namespace iotguard {
 
