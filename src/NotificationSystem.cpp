@@ -1,13 +1,17 @@
 #include "NotificationSystem.h"
 
 namespace iotguard {
-    void NotificationSystem::notify(const std::vector<AnomalyEntry> &anomalies) const {
-        for (const auto &anomaly: anomalies){
-            std::cout << "Timestamp: " << anomaly.timestamp << "\n";
-            std::cout << "Importance: " <<LEVEL[anomaly.level] << "\n";
-            std::cout << "Type: " << anomaly.type << "\n";
-            std::cout << "Data: " << anomaly.data << "\n";
-            std::cout << "--------------------------------------\n";
+    void NotificationSystem::Notify() const {
+        std::cout << buffer.str() << std::endl;
+    }
+
+    void NotificationSystem::add_to_buffer(const std::vector<AnomalyEntry> &anomalies) {
+        for (const auto &anomaly: anomalies) {
+            buffer << "Timestamp: " << anomaly.timestamp << "\n";
+            buffer << "Importance: " << LEVEL[anomaly.level] << "\n";
+            buffer << "Type: " << anomaly.type << "\n";
+            buffer << "Data: " << anomaly.data << "\n";
+            buffer << "--------------------------------------\n";
         }
     }
 } // iotguard

@@ -1,9 +1,11 @@
 {
-  "device": "juniper",
-  "host": "http://192.168.0.29:3030/",
-  "requests-config": "configs\\juniper_url.json",
-  "user": {
-    "login": "root",
-    "pass": "admin1"
-  }
+    "device": "juniper",
+    "host": "http://192.168.0.29:3030/",
+    "learning": false,
+    "requests-config": "configs\\juniper_url.json",
+    "use_cache": false,
+    "user": {
+        "login": "root",
+        "pass": "admin1"
+    }
 }

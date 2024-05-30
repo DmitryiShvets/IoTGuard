@@ -20,12 +20,13 @@ namespace iotguard {
         }
 
         void update(const std::vector<AnomalyEntry> &anomalies) override {
-            notify(anomalies);
+            add_to_buffer(anomalies);
         }
+        void Notify() const;
 
     private:
-        void notify(const std::vector<AnomalyEntry> &anomalies) const;
-
+        void add_to_buffer(const std::vector<AnomalyEntry> &anomalies);
+        std::ostringstream buffer;
     };
 } // iotguard
 

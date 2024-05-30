@@ -8,8 +8,6 @@
 #include "Stuff.h"
 
 
-#define REFERENCE_MODE false
-
 using json = nlohmann::json;
 
 namespace iotguard {
@@ -69,7 +67,7 @@ namespace iotguard {
         copy_if_match(parse_result, lines, regex_other, timestamp);
         remove_if_match(lines, regex_other);
 
-        if (REFERENCE_MODE) {
+        if (learning_mode) {
             json httpd;
             for (const auto &item: parse_result) {
                 httpd.emplace_back(item);
@@ -107,8 +105,7 @@ namespace iotguard {
         }
     }
 
-    HttpdParser::HttpdParser(bool use_cache) {
-
+    HttpdParser::HttpdParser(bool learn_mode, bool use_cache) : learning_mode(learn_mode){
         std::filesystem::path file{R"(configs\parser-httpd-config.json)"};
 
         if (!use_cache || !std::filesystem::exists(file)) {
@@ -164,7 +161,7 @@ namespace iotguard {
             parse_result.emplace_back("process", data, timestamp, hash);
         }
 
-        if (REFERENCE_MODE) {
+        if (learning_mode) {
             json proc;
             for (const auto &item: parse_result) {
                 proc.emplace_back(item);
@@ -177,6 +174,8 @@ namespace iotguard {
 
         return parse_result;
     }
+
+    ProcessParser::ProcessParser(bool learn_mode) : learning_mode(learn_mode) {}
 
     std::vector<std::string> parse_lines(const std::string &data) {
         std::vector<std::string> lines;

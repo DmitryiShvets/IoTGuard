@@ -1,26 +1,18 @@
 #include <iostream>
-#include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
-#include <fstream>
-// for convenience
-using json = nlohmann::json;
+#include <thread>
+#include "src/MonitoringTask.h"
 
-
-#include "src/DataCollector.h"
-#include "src/DataParser.h"
-#include "src/StateComparator.h"
-#include "src/AnomalyDetector.h"
-#include "src/NotificationSystem.h"
-#include "src/EventLogger.h"
 int main() {
 
 //    json conf;
 //    conf["host"] = "http://192.168.0.29:3030/";
 //    conf["device"] = "juniper";
+//    conf["learning"] = true;
+//    conf["use_cache"] = false;
 //    conf["requests-config"] = "configs\\juniper_url.json";
 //    conf["user"] = { {"login", "root"}, {"pass", "admin1"} };
 //    std::ofstream f("configs\\config.json");
-//    f << conf;
+//    f << conf.dump(4);
 //    f.close();
 
 //    json juniper;
@@ -30,33 +22,51 @@ int main() {
 //    f1 << juniper;
 //    f1.close();
 
-    iotguard::DataCollector collector{"configs\\config.json"};
-    iotguard::DataParser dataParser;
-    std::unique_ptr<iotguard::HttpdParser> httpdParser = std::make_unique<iotguard::HttpdParser>(false);
-    std::unique_ptr<iotguard::ProcessParser> processParser = std::make_unique<iotguard::ProcessParser>();
-    std::unique_ptr<iotguard::HttpdComparator> httpdComparator = std::make_unique<iotguard::HttpdComparator>();
-    std::unique_ptr<iotguard::ProcessComparator> processComparator = std::make_unique<iotguard::ProcessComparator>();
-    iotguard::NotificationSystem notifier;
-    iotguard::EventLogger logger;
-    
-    httpdComparator->Init();
-    processComparator->Init();
-    iotguard::StateComparator comparator;
+    iotguard::MonitoringTask monitoringTask;
+    std::thread monitoringThread(&iotguard::MonitoringTask::Run, &monitoringTask);
+    bool is_monitoring = false;
+    std::string command;
+    while (true) {
+        if (is_monitoring) {
+            std::cout << "Enter command (start/stop, exit, print): ";
+        } else {
+            std::cout << "Enter command (start/stop, exit): ";
+        }
 
-    //collector.GetData();
-    dataParser.SetParser(httpdParser.get());
-    //dataParser.SetParser(processParser.get());
-    auto parse_result = dataParser.Parse(R"(logs\juniper\httpd\1716905013.xml)");
-    //auto parse_result = dataParser.Parse(R"(logs\juniper\process\1716905013.xml)");
-    comparator.SetComparator(httpdComparator.get());
-    //comparator.SetComparator(processComparator.get());
-    auto unrecognized_data = comparator.Compare(parse_result);
+        std::getline(std::cin, command);
 
-    iotguard::AnomalyDetector anomalyDetector;
-    anomalyDetector.AddRule({"", std::regex("(.*)"), iotguard::IMPORTANCE_LEVEL::INFO, 0});
-    anomalyDetector.AddRule({"", std::regex(".*(/?PHPRC=/dev/fd/0).*"), iotguard::IMPORTANCE_LEVEL::CRITICAL, 0});
-    auto anomaly_data = anomalyDetector.DetectAnomalies(unrecognized_data);
+        if (command == "start") {
+            if (!is_monitoring) {
+                monitoringTask.Start();
+                std::cout << "OK: Monitoring start. \n";
+                is_monitoring = true;
+            } else {
+                std::cout << "ERROR: Monitoring is already started. \n";
+            }
 
+        } else if (command == "stop") {
+            if (is_monitoring) {
+                monitoringTask.Stop();
+                std::cout << "OK: Monitoring stop. \n";
+                is_monitoring = false;
+            } else {
+                std::cout << "ERROR: Monitoring is already stopped. \n";
+            };
+
+        } else if (command == "exit") {
+            monitoringTask.Stop();
+            std::cout << "Exit: " << std::endl;
+            break;
+        } else if (command == "print") {
+            std::cout << "Print notifies: \n";
+            monitoringTask.Print();
+        }
+    }
+
+    if (monitoringThread.joinable()) {
+        monitoringThread.join();
+    }
 
     return 0;
 }
+

@@ -21,7 +21,7 @@ namespace iotguard {
     // Парсер для httpd логов
     class HttpdParser : public IParser {
         std::size_t offset;
-
+        bool learning_mode;
         std::hash<std::string> hasher;
 
         void remove_if_match(std::vector<std::string> &input, const std::regex &regex) const;
@@ -32,7 +32,7 @@ namespace iotguard {
 
 
     public:
-        HttpdParser(bool use_cache);
+        HttpdParser(bool learning_mode,bool use_cache);
 
         std::vector<LogEntry> parse(const std::string &data) override;
 
@@ -41,9 +41,14 @@ namespace iotguard {
 
     // Парсер для process логов
     class ProcessParser : public IParser {
+        bool learning_mode;
         std::hash<std::string> hasher;
     public:
+
+        explicit ProcessParser(bool learning_mode);
+
         std::vector<LogEntry> parse(const std::string &data) override;
+
     };
 
     ///Data Parser распарсивает полученные данные и передает их в State Comparator.
