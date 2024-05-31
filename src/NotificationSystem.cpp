@@ -1,8 +1,10 @@
 #include "NotificationSystem.h"
 
 namespace iotguard {
-    void NotificationSystem::Notify() const {
+    void NotificationSystem::Notify()  {
         std::cout << buffer.str() << std::endl;
+        buffer.str("");
+        buffer.clear();
     }
 
     void NotificationSystem::add_to_buffer(const std::vector<AnomalyEntry> &anomalies) {

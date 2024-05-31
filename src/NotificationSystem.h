@@ -22,7 +22,7 @@ namespace iotguard {
         void update(const std::vector<AnomalyEntry> &anomalies) override {
             add_to_buffer(anomalies);
         }
-        void Notify() const;
+        void Notify() ;
 
     private:
         void add_to_buffer(const std::vector<AnomalyEntry> &anomalies);

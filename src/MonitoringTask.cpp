@@ -37,7 +37,8 @@ namespace iotguard {
 
     void MonitoringTask::Stop() {
         std::unique_lock<std::mutex> lock(mtx);
-        stopFlag = true;cv.notify_all();
+        stopFlag = true;
+        cv.notify_all();
     }
 
     void MonitoringTask::Run() {
@@ -53,7 +54,7 @@ namespace iotguard {
             }
 
             // Выполнение задач
-            //collector.GetData();
+            collector.GetData();
 
             dataParser.SetParser(httpdParser.get());
             comparator.SetComparator(httpdComparator.get());
@@ -65,7 +66,6 @@ namespace iotguard {
                     auto parse_result = dataParser.Parse(filePath);
                     unrecognized_data = comparator.Compare(parse_result);
                     anomaly_data = anomalyDetector.DetectAnomalies(unrecognized_data);
-                    std::cout << "detected " << anomaly_data.size() << " anomalies\n";
                     fs::remove(entry.path());
                 }
             }
@@ -80,12 +80,9 @@ namespace iotguard {
                     auto parse_result = dataParser.Parse(filePath);
                     unrecognized_data = comparator.Compare(parse_result);
                     anomaly_data = anomalyDetector.DetectAnomalies(unrecognized_data);
-                    //std::cout << "detected " << anomaly_data.size() << " anomalies\n";
                     fs::remove(entry.path());
                 }
             }
-
-            //std::cout << std::flush;
 
             std::this_thread::sleep_for(std::chrono::seconds(15));
         }
