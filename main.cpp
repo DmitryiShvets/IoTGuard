@@ -3,7 +3,6 @@
 #include "src/MonitoringTask.h"
 
 int main() {
-
 //    json conf;
 //    conf["host"] = "http://192.168.0.29:3030/";
 //    conf["device"] = "juniper";
@@ -39,7 +38,6 @@ int main() {
             } else {
                 std::cout << "ERROR: Monitoring is already started. \n";
             }
-
         } else if (command == "stop") {
             if (is_monitoring) {
                 monitoringTask.Stop();
@@ -47,8 +45,7 @@ int main() {
                 is_monitoring = false;
             } else {
                 std::cout << "ERROR: Monitoring is already stopped. \n";
-            };
-
+            }
         } else if (command == "exit") {
             monitoringTask.Stop();
             std::cout << "Exit: " << std::endl;

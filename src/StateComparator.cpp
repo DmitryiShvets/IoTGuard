@@ -9,9 +9,11 @@ namespace iotguard {
 
     std::unordered_set<LogEntry> BaseComparator::load_references(const std::string &filepath) {
         std::ifstream file(filepath);
+        if (!file.good()) return {};
+
         json ref_json;
         file >> ref_json;
-
+        file.close();
         std::unordered_set<LogEntry> references;
         for (const auto &entry: ref_json) {
 
@@ -44,7 +46,6 @@ namespace iotguard {
         }
         return comparator->Compare(current_data);
     }
-
 
 
 } // iotguard

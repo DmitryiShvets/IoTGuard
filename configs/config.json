@@ -3,7 +3,7 @@
     "host": "http://192.168.0.29:3030/",
     "learning": false,
     "requests-config": "configs\\juniper_url.json",
-    "use_cache": false,
+    "use_cache": true,
     "user": {
         "login": "root",
         "pass": "admin1"
