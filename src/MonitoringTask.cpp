@@ -42,19 +42,22 @@ namespace iotguard {
     }
 
     void MonitoringTask::Run() {
-        std::unique_lock<std::mutex> lock(mtx);
         std::vector<LogEntry> unrecognized_data;
         std::vector<AnomalyEntry> anomaly_data;
 
         while (true) {
-            cv.wait(lock, [this] { return running || stopFlag; });
-            if (stopFlag) {
-                running = false;
+            {
+                std::unique_lock<std::mutex> lock(mtx);
+                cv.wait(lock, [this] { return running || stopFlag; });
+                if (stopFlag) {
+                    running = false;
+                    break;
+                }
+            }
+            if (!collector.GetData()) {
+                std::cerr << "failed to fetch data from remote device" << std::endl;
                 break;
             }
-
-            // Выполнение задач
-            collector.GetData();
 
             dataParser.SetParser(httpdParser.get());
             comparator.SetComparator(httpdComparator.get());

@@ -27,11 +27,7 @@ int main() {
     bool is_monitoring = false;
     std::string command;
     while (true) {
-        if (is_monitoring) {
-            std::cout << "Enter command (start/stop, exit, print): ";
-        } else {
-            std::cout << "Enter command (start/stop, exit): ";
-        }
+        std::cout << "Enter command (start/stop, exit, print, info): ";
 
         std::getline(std::cin, command);
 

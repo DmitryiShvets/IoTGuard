@@ -14,7 +14,7 @@ using json = nlohmann::json;
 namespace iotguard {
 
 
-    void DataCollector::GetData() {
+    bool DataCollector::GetData() {
         for (RequestData &request: requests) {
             cpr::Response response = cpr::Post(cpr::Url{host_address + request.url},
                                                cpr::Authentication{std::get<0>(user_auth),
@@ -36,19 +36,22 @@ namespace iotguard {
                     timestamp.erase(std::remove(timestamp.begin(), timestamp.end(), '\n'), timestamp.end());
                     doc.document_element().append_attribute("timestamp").set_value(timestamp.c_str());
 
-                    std::cout << doc.save_file(file_path.c_str()) << '\n';
+                    doc.save_file(file_path.c_str());
                 } else {
                     std::cerr << "XML  parsed with errors, attr value: [" << doc.child("node").attribute("attr").value()
                               << "]\n";
                     std::cerr << "Error description: " << result.description() << "\n";
                     std::cerr << "Error offset: " << result.offset << " (error at [..."
-                              << (response.text.c_str() + result.offset) << "]\n\n";
+                              << (response.text.c_str() + result.offset) << "]\n";
+                    return false;
                 }
             } else {
                 std::cerr << "Error fetch data: " << request.id << " response status code: " << response.status_code
                           << "\n";
+                return false;
             }
         }
+        return true;
     }
 
     DataCollector::DataCollector(const std::string &config_file) {

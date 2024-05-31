@@ -26,7 +26,7 @@ namespace iotguard {
 
         explicit DataCollector(const std::string& config_file);
 
-        void GetData();
+        bool GetData();
 
     };
 
